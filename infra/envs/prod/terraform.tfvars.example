@@ -1,0 +1,150 @@
+# Production Environment - Terraform Variables Example
+# Copy this file to terraform.tfvars and customize the values
+
+# =============================================================================
+# Basic Configuration
+# =============================================================================
+
+# AWS Configuration
+aws_region   = "us-west-2"
+project_name = "fastapi-infra"
+
+# Common tags applied to all resources
+common_tags = {
+  Project     = "FastAPI Infrastructure"
+  ManagedBy   = "Terraform"
+  Environment = "prod"
+  Owner       = "your-team@company.com"
+  CostCenter  = "your-cost-center"
+}
+
+# =============================================================================
+# EC2 Configuration - Production Settings
+# =============================================================================
+
+# EC2 Instance Configuration
+ec2_instance_type       = "t3.small"   # Better performance for production
+ec2_key_name            = "your-prod-key-pair"  # REQUIRED: Must exist in AWS
+ec2_associate_public_ip = true
+ec2_create_elastic_ip   = true         # Recommended for production
+
+# Storage Configuration
+ec2_root_volume_size      = 50         # Larger storage for production
+ec2_root_volume_type      = "gp3"
+ec2_root_volume_encrypted = true
+
+# =============================================================================
+# RDS Configuration - Choose Option A or B
+# =============================================================================
+
+# Option A: Use Existing RDS Instance
+# Uncomment and configure these variables if you have an existing RDS instance
+# use_existing_rds     = true
+# existing_db_host     = "prod-db.xxxxx.rds.amazonaws.com"
+# existing_db_port     = 5432
+# existing_db_name     = "fastapi_prod"
+# existing_db_username = "admin"
+# existing_db_password = "your-secure-password"  # Use Secrets Manager in production
+
+# Option B: Create New RDS Instance (Production-ready)
+use_existing_rds = false
+
+# New RDS Configuration (when use_existing_rds = false)
+rds_engine_version        = "16.2"
+rds_instance_class        = "db.t3.small"  # Better performance for production
+rds_allocated_storage     = 100            # Larger initial storage
+rds_max_allocated_storage = 500            # Higher maximum for scaling
+
+# Database Credentials (for new RDS)
+db_name     = "fastapi_prod"
+db_username = "dbadmin"
+# db_password = "your-very-secure-password"  # Consider using generated password
+
+# RDS Settings (production-optimized)
+rds_backup_retention_period = 7      # 7 days backup retention
+rds_skip_final_snapshot     = false  # Take final snapshot in production
+rds_deletion_protection     = true   # Prevent accidental deletion
+rds_multi_az                = true   # High availability
+
+# Security Settings
+store_db_password_in_secrets_manager = true  # Use Secrets Manager in production
+
+# =============================================================================
+# FastAPI Application Configuration
+# =============================================================================
+
+# Application Repository
+fastapi_app_repo_url    = "https://github.com/your-username/fastapi-app.git"
+fastapi_app_repo_branch = "main"       # Use main/master branch for production
+fastapi_app_port        = 8000
+fastapi_log_level       = "warning"    # Less verbose for production
+
+# =============================================================================
+# External API Configuration
+# =============================================================================
+
+# API Keys for External Services
+# REQUIRED for production - these must be set
+# SECURITY: Never commit real API keys to version control
+# Recommended: Use environment variables or pass via CI/CD pipeline
+
+# Tavily API Key - REQUIRED
+tavily_api_key = "your-tavily-api-key-here"
+
+# Gemini API Key - REQUIRED
+gemini_api_key = "your-gemini-api-key-here"
+
+# Alternative: Set as environment variables
+# export TF_VAR_tavily_api_key="your-key"
+# export TF_VAR_gemini_api_key="your-key"
+
+# =============================================================================
+# S3 Configuration
+# =============================================================================
+
+# S3 Bucket for Application Data - REQUIRED for production
+s3_bucket_name = "your-fastapi-prod-bucket"
+
+# Additional S3 Buckets for Specific IAM Access
+s3_bucket_names = [
+  "your-fastapi-prod-bucket",
+  "your-fastapi-logs-bucket",
+  "your-fastapi-backups-bucket"
+]
+
+# =============================================================================
+# Production Considerations
+# =============================================================================
+
+# 1. Security:
+#    - Use Secrets Manager for sensitive data
+#    - Enable deletion protection for RDS
+#    - Encrypt all storage volumes
+#    - Review security group rules regularly
+#    - Rotate API keys regularly
+
+# 2. High Availability:
+#    - Enable Multi-AZ for RDS
+#    - Use Elastic IP for consistent public IP
+#    - Consider multiple EC2 instances with load balancer (future)
+
+# 3. Backup & Recovery:
+#    - Enable RDS automated backups (7+ days retention)
+#    - Take final snapshot before deletion
+#    - Regular testing of backup restoration
+
+# 4. Monitoring:
+#    - Enable CloudWatch monitoring
+#    - Set up alerts for critical metrics
+#    - Log aggregation and analysis
+
+# 5. Cost Optimization:
+#    - Right-size instance types based on actual usage
+#    - Use reserved instances for predictable workloads
+#    - Monitor and optimize storage usage
+
+# 6. Security Best Practices:
+#    - Restrict SSH access to specific IP ranges
+#    - Use IAM roles instead of access keys where possible
+#    - Regular security audits and updates
+#    - Network segmentation (private subnets for future)
