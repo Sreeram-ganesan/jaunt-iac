@@ -48,19 +48,32 @@ jaunt-iac/
    cd jaunt-iac
    ```
 
-2. **Configure variables**
+2. **Set up remote state backend** (one-time setup)
+   ```bash
+   # Test the backend configuration first
+   make test-backend
+   
+   # Configure backend variables
+   cp infra/backend/terraform.tfvars.example infra/backend/terraform.tfvars
+   # Edit infra/backend/terraform.tfvars with your AWS region and bucket name
+   
+   # Initialize the backend infrastructure
+   make init-backend
+   ```
+
+3. **Configure environment variables**
    ```bash
    # Copy example configuration (when available)
    cp infra/envs/dev/terraform.tfvars.example infra/envs/dev/terraform.tfvars
    # Edit with your specific values
    ```
 
-3. **Deploy to development**
+4. **Deploy to development**
    ```bash
    make dev-deploy
    ```
 
-4. **Check service health**
+5. **Check service health**
    ```bash
    make health-dev
    ```
@@ -69,10 +82,18 @@ jaunt-iac/
 
 Run `make help` to see all available commands:
 
+### Backend Management
+- `make init-backend` - Initialize Terraform backend infrastructure (S3 + DynamoDB)
+- `make test-backend` - Test backend configuration (validation only)
+- `make backend-destroy` - Destroy backend infrastructure (USE WITH CAUTION)
+
+### Environment Management
 - `make dev-deploy` - Deploy to development environment
 - `make prod-deploy` - Deploy to production environment  
 - `make dev-destroy` - Destroy development environment
 - `make prod-destroy` - Destroy production environment
+
+### Operations
 - `make ssh-dev` - SSH to development instance
 - `make ssh-prod` - SSH to production instance
 - `make health-dev` - Check development service health
