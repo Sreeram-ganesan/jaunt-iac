@@ -9,15 +9,14 @@
 # 3. Update the bucket name and other values from the backend outputs
 # 4. Run `terraform init` to configure the remote backend
 
-# terraform {
-#   backend "s3" {
-#     bucket         = "your-terraform-state-bucket-name"
-#     key            = "environments/dev/terraform.tfstate"
-#     region         = "us-west-2"
-#     dynamodb_table = "terraform-state-lock"
-#     encrypt        = true
-#   }
-# }
+terraform {
+  backend "s3" {
+    bucket  = "jaunt-terraform-state-dev"
+    key     = "backend/terraform.tfstate"
+    region  = "us-east-2"
+    encrypt = true
+  }
+}
 
 # Example with actual values (replace with your outputs):
 # terraform {
