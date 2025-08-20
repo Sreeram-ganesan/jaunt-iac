@@ -39,21 +39,8 @@ resource "aws_s3_bucket_public_access_block" "terraform_state" {
   restrict_public_buckets = true
 }
 
-# DynamoDB Table for State Locking
-resource "aws_dynamodb_table" "terraform_state_lock" {
-  name         = var.dynamodb_table_name
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "LockID"
-
-  attribute {
-    name = "LockID"
-    type = "S"
-  }
-
-  tags = {
-    Name        = "Terraform State Lock Table"
-    Environment = var.environment
-    Purpose     = "terraform-state-locking"
-    Project     = "fastapi-infrastructure"
-  }
-}
+# Note: This configuration uses S3 versioning for state management instead of DynamoDB locking.
+# S3 Object Lock is not used here because Terraform requires the ability to delete lock files
+# when operations complete, which Object Lock would prevent. For single-user or controlled
+# environments, S3 versioning provides adequate protection against state corruption.
+# For multi-user environments requiring strict locking, consider using DynamoDB locking.

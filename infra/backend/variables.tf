@@ -8,17 +8,6 @@ variable "state_bucket_name" {
   }
 }
 
-variable "dynamodb_table_name" {
-  description = "Name of the DynamoDB table for Terraform state locking"
-  type        = string
-  default     = "terraform-state-lock"
-
-  validation {
-    condition     = can(regex("^[a-zA-Z0-9_-]+$", var.dynamodb_table_name))
-    error_message = "DynamoDB table name must contain only alphanumeric characters, underscores, and hyphens."
-  }
-}
-
 variable "environment" {
   description = "Environment name (e.g., dev, prod)"
   type        = string

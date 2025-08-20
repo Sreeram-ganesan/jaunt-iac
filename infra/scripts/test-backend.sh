@@ -29,10 +29,9 @@ terraform fmt -check=true -diff=true
 echo "✅ Step 4: Testing with example variables..."
 # Create a temporary tfvars file for testing
 cat > test.tfvars << EOF
-state_bucket_name   = "test-terraform-state-bucket"
-dynamodb_table_name = "test-terraform-state-lock"
-environment         = "dev"
-aws_region          = "us-west-2"
+state_bucket_name = "test-terraform-state-bucket"
+environment       = "dev"
+aws_region        = "us-west-2"
 EOF
 
 echo "   Testing plan generation (will fail without AWS credentials, which is expected)..."

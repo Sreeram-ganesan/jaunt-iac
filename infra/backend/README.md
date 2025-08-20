@@ -1,18 +1,19 @@
 # Terraform Remote State Backend Configuration
 
-This directory contains the Terraform configuration to set up remote state backend infrastructure for the FastAPI project using AWS S3 and DynamoDB.
+This directory contains the Terraform configuration to set up remote state backend infrastructure for the FastAPI project using AWS S3.
 
 ## Overview
 
 The remote state backend consists of:
 - **S3 Bucket**: Stores Terraform state files with versioning and encryption
-- **DynamoDB Table**: Provides state locking to prevent conflicts during concurrent operations
+
+**Note on State Locking**: This configuration uses S3 versioning instead of DynamoDB locking for simplicity. While S3 Object Lock was considered, it's not suitable for Terraform state locking because Terraform needs to delete lock files when operations complete. For single-user or controlled environments, S3 versioning provides adequate protection. For multi-user environments requiring strict locking, consider adding DynamoDB locking.
 
 ## Prerequisites
 
 - AWS CLI configured with appropriate credentials
 - Terraform >= 1.0 installed
-- Permissions to create S3 buckets and DynamoDB tables in your AWS account
+- Permissions to create S3 buckets in your AWS account
 
 ## Quick Setup
 
@@ -60,11 +61,10 @@ Once the backend infrastructure is created, you can use it in other Terraform co
 ```hcl
 terraform {
   backend "s3" {
-    bucket         = "your-terraform-state-bucket"
-    key            = "path/to/terraform.tfstate"  # Unique for each configuration
-    region         = "us-west-2"
-    dynamodb_table = "terraform-state-lock"
-    encrypt        = true
+    bucket  = "your-terraform-state-bucket"
+    key     = "path/to/terraform.tfstate"  # Unique for each configuration
+    region  = "us-west-2"
+    encrypt = true
   }
 }
 ```
@@ -80,16 +80,12 @@ Recommended state key patterns:
 
 - The S3 bucket name must be globally unique across all AWS accounts
 - Enable versioning and encryption for state files security
-- The DynamoDB table is created with pay-per-request billing to minimize costs
-- State locking prevents concurrent modifications that could corrupt state
 
 ## Outputs
 
 This configuration provides the following outputs:
 - `s3_bucket_name` - Name of the created S3 bucket
 - `s3_bucket_arn` - ARN of the S3 bucket
-- `dynamodb_table_name` - Name of the DynamoDB table
-- `dynamodb_table_arn` - ARN of the DynamoDB table
 - `backend_configuration` - Complete backend configuration for reference
 
 ## Cleanup
