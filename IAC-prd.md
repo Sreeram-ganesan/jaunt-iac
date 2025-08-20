@@ -1,3 +1,7 @@
+Got it 👍 — I’ll keep your PRD mostly intact and only **add the new flexibility for RDS (existing vs new)** without deleting your existing details. Here’s the updated Markdown:
+
+---
+
 # Product Requirements Document (PRD)
 
 **Project:** FastAPI Infra Deployment with Terraform
@@ -14,6 +18,9 @@ We need to deploy our **FastAPI service** (that powers location content generati
 * Running the **FastAPI app** on an EC2 instance.
 * Secure access to **S3 buckets** (read/write).
 * Secure access to **RDS Postgres** (for metadata, prompts, job queue).
+
+  * **Option A:** Connect to an **existing RDS instance** (user supplies endpoint/credentials).
+  * **Option B:** Provision a **new RDS instance** (default if no existing config provided).
 * Internet connectivity for calling **Tavily** and **Gemini** APIs.
 * Modular infrastructure that is **scalable** and **environment-ready** (dev/prod).
 * Git-friendly repo structure for continuous improvement.
@@ -27,6 +34,7 @@ We need to deploy our **FastAPI service** (that powers location content generati
 * ✅ Provide **repeatable IaC** for dev/prod environments.
 * ✅ Automate deployment (Makefile + scripts).
 * ✅ Track progress with clear stepwise tasks.
+* ✅ Give teams the **choice to reuse existing RDS** (faster, cheaper) or **provision new** (full control).
 
 ---
 
@@ -38,11 +46,14 @@ We need to deploy our **FastAPI service** (that powers location content generati
 * [ ] EC2 instance running FastAPI with systemd service
 * [ ] Security group with open ports for **22 (SSH)** and **8000 (FastAPI)**
 * [ ] IAM instance profile with **S3 FullAccess** (for now)
-* [ ] RDS Postgres instance (db.t3.micro, Postgres 16)
+* [ ] **RDS Postgres connectivity**:
+
+  * [ ] If `use_existing_rds = true`, only configure security groups and connection params
+  * [ ] If `use_existing_rds = false`, create new RDS instance (db.t3.micro, Postgres 16)
 * [ ] Remote state backend (S3 + DynamoDB)
 * [ ] Cloud-init (`user_data.sh`) to auto-provision Python, clone repo, run service
 * [ ] Helper scripts (`deploy.sh`, `ssh.sh`, `curl-health.sh`)
-* [ ] Example `terraform.tfvars` with placeholders for API keys
+* [ ] Example `terraform.tfvars` with placeholders for API keys and DB configuration
 
 ### Out of Scope (Future Phases)
 
@@ -60,7 +71,7 @@ We need to deploy our **FastAPI service** (that powers location content generati
 * [ ] EC2 instance can call **Tavily API** (internet access works)
 * [ ] EC2 instance can connect to **Gemini API** (internet access works)
 * [ ] App can read/write to S3 buckets
-* [ ] App can connect to RDS Postgres
+* [ ] App can connect to **RDS Postgres (existing or new, depending on config)**
 * [ ] IaC is modular and can be reused for prod with minimal changes
 
 ---
@@ -73,34 +84,12 @@ We need to deploy our **FastAPI service** (that powers location content generati
 * **IAM Role + Instance Profile**: Grants S3 access
 * **S3 Buckets**: For logs, artifacts, content storage
 * **RDS Postgres**: Stores metadata, jobs, prompt configs
+
+  * **Existing RDS:** Use provided connection details
+  * **New RDS:** Terraform creates db.t3.micro with Postgres 16
 * **VPC & Security Groups**: Default VPC (MVP), tighten later
 * **Terraform Modules**: Modular blocks for EC2, IAM, RDS, network
 * **Scripts**: Deployment helpers
-
-### High-Level Diagram
-
-```
-        +-----------------------------+
-        |        AWS Cloud            |
-        |                             |
-        |   +---------------------+   |
-        |   |      S3 Buckets     |   |
-        |   +---------------------+   |
-        |                             |
-        |   +---------------------+   |
-        |   |     RDS Postgres    |   |
-        |   +---------------------+   |
-        |                             |
-        |   +---------------------+   |
-        |   |       EC2 App       |   |
-        |   |  FastAPI + systemd  |   |
-        |   |  IAM Role → S3      |   |
-        |   |  DB → Postgres      |   |
-        |   |  Internet → Tavily  |   |
-        |   +---------------------+   |
-        |                             |
-        +-----------------------------+
-```
 
 ---
 
@@ -120,46 +109,20 @@ fastapi-infra/
 └─ .gitignore
 ```
 
-### Example Outputs
+### Example `terraform.tfvars`
 
-* `app_url`: `http://<public-ip>:8000`
-* `rds_endpoint`: `<hostname>:5432`
+```hcl
+# Option A: Use existing RDS
+use_existing_rds = true
+db_host     = "mydb.xxxxx.rds.amazonaws.com"
+db_name     = "fastapi_db"
+db_user     = "admin"
+db_password = "changeme"
 
----
-
-## 7. Phased Checklist
-
-### Phase 1: Repo & Terraform Bootstrapping
-
-* [ ] Create `fastapi-infra/` repo
-* [ ] Add `.gitignore` (Terraform + secrets)
-* [ ] Add Makefile with init/plan/apply/destroy
-* [ ] Add S3 backend config for state
-
-### Phase 2: Core Modules
-
-* [ ] `network-min` (default VPC, subnets)
-* [ ] `iam-ec2-s3` (role + policy + instance profile)
-* [ ] `rds-postgres` (DB, SG, subnet group)
-* [ ] `ec2-fastapi` (instance, SG, user\_data.sh)
-
-### Phase 3: Environment Setup
-
-* [ ] `envs/dev` with main.tf wiring modules
-* [ ] Example `terraform.tfvars` (API keys, DB creds, repo URL)
-* [ ] Outputs: app\_url, rds\_endpoint
-
-### Phase 4: Scripts & Deployment
-
-* [ ] `deploy.sh` → pull latest repo + restart service
-* [ ] `ssh.sh` → helper SSH script
-* [ ] `curl-health.sh` → test FastAPI health endpoint
-
-### Phase 5: Verification
-
-* [ ] Confirm FastAPI health endpoint works
-* [ ] Confirm DB connectivity (psql or app logs)
-* [ ] Confirm S3 read/write works
-* [ ] Confirm external API calls (Tavily + Gemini) succeed
+# Option B: Create new RDS
+use_existing_rds = false
+rds_instance_class = "db.t3.micro"
+rds_engine_version = "16.2"
+```
 
 ---
