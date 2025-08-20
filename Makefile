@@ -1,20 +1,38 @@
 # Makefile for FastAPI Infrastructure Deployment
 # Usage: make <target>
 
-.PHONY: help dev-deploy prod-deploy dev-destroy prod-destroy ssh-dev ssh-prod health-dev health-prod clean
+.PHONY: help init-backend backend-destroy test-backend dev-deploy prod-deploy dev-destroy prod-destroy ssh-dev ssh-prod health-dev health-prod clean
 
 # Default target
 help:
 	@echo "Available targets:"
-	@echo "  dev-deploy    - Deploy to development environment"
-	@echo "  prod-deploy   - Deploy to production environment" 
-	@echo "  dev-destroy   - Destroy development environment"
-	@echo "  prod-destroy  - Destroy production environment"
-	@echo "  ssh-dev       - SSH to development instance"
-	@echo "  ssh-prod      - SSH to production instance"
-	@echo "  health-dev    - Check development service health"
-	@echo "  health-prod   - Check production service health"
-	@echo "  clean         - Clean temporary files"
+	@echo "  init-backend    - Initialize Terraform backend infrastructure"
+	@echo "  test-backend    - Test backend configuration (validation only)"
+	@echo "  backend-destroy - Destroy backend infrastructure (USE WITH CAUTION)"
+	@echo "  dev-deploy      - Deploy to development environment"
+	@echo "  prod-deploy     - Deploy to production environment" 
+	@echo "  dev-destroy     - Destroy development environment"
+	@echo "  prod-destroy    - Destroy production environment"
+	@echo "  ssh-dev         - SSH to development instance"
+	@echo "  ssh-prod        - SSH to production instance"
+	@echo "  health-dev      - Check development service health"
+	@echo "  health-prod     - Check production service health"
+	@echo "  clean           - Clean temporary files"
+
+# Backend infrastructure
+init-backend:
+	@echo "Initializing Terraform backend infrastructure..."
+	cd infra/scripts && ./init-backend.sh
+
+test-backend:
+	@echo "Testing Terraform backend configuration..."
+	cd infra/scripts && ./test-backend.sh
+
+backend-destroy:
+	@echo "WARNING: This will destroy the backend infrastructure!"
+	@echo "Make sure no environments are using remote state before proceeding."
+	@read -p "Are you sure? (type 'yes' to confirm): " confirmation && [ "$$confirmation" = "yes" ]
+	cd infra/backend && terraform destroy
 
 # Development environment
 dev-deploy:
