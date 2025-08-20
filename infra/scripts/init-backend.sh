@@ -78,7 +78,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     
     echo ""
     echo "📝 Next steps:"
-    echo "1. Use the S3 bucket and DynamoDB table in your environment configurations"
+    echo "1. Use the S3 bucket in your environment configurations"
     echo "2. Configure backend blocks in your environment-specific Terraform files"
     echo "3. Run 'terraform init' in those directories to start using remote state"
     
